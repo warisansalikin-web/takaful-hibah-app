@@ -251,6 +251,36 @@ _Dibuat menggunakan Takaful Hibah Calc - App Kalkulator Percuma Advisor_`;
       >
         💬 Kongsi Ringkasan WhatsApp & Simpan
       </button>
+      {/* Add this inside your main container div, right at the bottom */}
+<footer className="mt-8 pt-6 border-t border-slate-700/50 text-center">
+  <p className="text-xs text-slate-400 font-medium">
+    Berminat untuk versi khas Agensi atau sebarang pertanyaan?
+  </p>
+  
+  <div className="flex items-center justify-center gap-3 mt-3">
+    {/* WhatsApp Button */}
+    <a
+      href="https://wa.me/601164086164?text=Hai%20developer,%20saya%20berminat%20nak%20tanya%20pasal%20Takaful%20Hibah%20App"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-semibold transition-colors border border-emerald-500/20"
+    >
+      <span>💬 WhatsApp Admin</span>
+    </a>
+
+    {/* Email Button */}
+    <a
+      href="mailto:warisansalikin@gmail.com?subject=Inkuiri%20Takaful%20Hibah%20App"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold transition-colors border border-slate-700"
+    >
+      <span>✉️ E-mel</span>
+    </a>
+  </div>
+
+  <p className="text-[10px] text-slate-500 mt-4">
+    © {new Date().getFullYear()} Takaful Hibah Calc. Hak Cipta Terpelihara.
+  </p>
+</footer>
     </div>
   );
 }
