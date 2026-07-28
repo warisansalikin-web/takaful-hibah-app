@@ -43,19 +43,33 @@ export default function App() {
     setAgentSaved(true);
   };
 
-  // Save Client & Open WhatsApp
-  const handleShareWhatsApp = async () => {
-    if (!clientName) return alert('Sila masukkan nama pelanggan.');
+// Save Client & Open WhatsApp
+const handleShareWhatsApp = async () => {
+  if (!clientName) return alert('Sila masukkan nama pelanggan.');
 
-    // 1. Save record into Supabase
-    const { data: advisor } = await supabase
+  try {
+    // 1. Ensure Advisor exists in Supabase (upsert/check)
+    let { data: advisor } = await supabase
       .from('advisors')
       .select('id')
       .eq('whatsapp_num', agent.phone)
-      .single();
+      .maybeSingle();
 
+    // If advisor doesn't exist in Supabase yet, insert now
+    if (!advisor) {
+      const { data: newAdvisor, error: advError } = await supabase
+        .from('advisors')
+        .insert([{ full_name: agent.name, whatsapp_num: agent.phone }])
+        .select()
+        .single();
+
+      if (advError) console.error("Error saving advisor:", advError);
+      advisor = newAdvisor;
+    }
+
+    // 2. Save Client record linking to Advisor ID
     if (advisor) {
-      await supabase.from('clients').insert([{
+      const { error: clientError } = await supabase.from('clients').insert([{
         advisor_id: advisor.id,
         client_name: clientName,
         client_phone: clientPhone,
@@ -65,10 +79,15 @@ export default function App() {
         assets: Number(assets),
         hibah_gap: hibahGap
       }]);
-    }
 
-    // 2. Build WhatsApp String
-    const text = `*Ringkasan Cadangan Perlindungan Hibah*
+      if (clientError) console.error("Error saving client:", clientError);
+    }
+  } catch (err) {
+    console.error("Database sync error:", err);
+  }
+
+  // 3. Build WhatsApp String & Redirect
+  const text = `*Ringkasan Cadangan Perlindungan Hibah*
 
 *Pelanggan:* ${clientName}
 ----------------------------------
@@ -86,9 +105,9 @@ export default function App() {
 
 _Dibuat menggunakan Takaful Hibah Calc - App Kalkulator Percuma Advisor_`;
 
-    const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
-  };
+  const encodedText = encodeURIComponent(text);
+  window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+};
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 max-w-md mx-auto">
