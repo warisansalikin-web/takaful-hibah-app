@@ -49,11 +49,40 @@ const handleShareWhatsApp = async () => {
 
   try {
     // 1. Ensure Advisor exists in Supabase (upsert/check)
-    let { data: advisor } = await supabase
-      .from('advisors')
-      .select('id')
-      .eq('whatsapp_num', agent.phone)
-      .maybeSingle();
+    // CHANGE THIS:
+// let { data: advisor, error: fetchErr } = await supabase
+//   .from('advisors')
+//   .select('id')
+//   .eq('whatsapp_num', agent.phone)
+//   .maybeSingle();
+
+// TO THIS ( safer, avoids 406 header errors):
+let { data: advisorRows, error: fetchErr } = await supabase
+  .from('advisors')
+  .select('id')
+  .eq('whatsapp_num', agent.phone);
+
+if (fetchErr) {
+  alert("Error finding advisor: " + fetchErr.message);
+  return;
+}
+
+let advisor = advisorRows && advisorRows.length > 0 ? advisorRows[0] : null;
+
+if (!advisor) {
+  // Insert new advisor if missing
+  const { data: newAdvisor, error: advInsertErr } = await supabase
+    .from('advisors')
+    .insert([{ full_name: agent.name, whatsapp_num: agent.phone }])
+    .select('id')
+    .single(); // array output is fine on insert with .select()
+
+  if (advInsertErr) {
+    alert("Failed to save Advisor: " + advInsertErr.message);
+    return;
+  }
+  advisor = newAdvisor;
+}
 
     // If advisor doesn't exist in Supabase yet, insert now
     if (!advisor) {
